@@ -2,6 +2,7 @@ import  express  from "express"; //module con js
 import csurf from 'csurf'
 import cookieParser from 'cookie-parser'
 import usuariosRoutes from "./routes/usuarioRoutes.js";
+import propiedadRoutes from "./routes/propiedaRoutes.js";
 import db from './config/db.js'
 import dotenv from 'dotenv'
 dotenv.config({path: ".env"})
@@ -43,7 +44,7 @@ app.use(express.static('public'))
 //Routing
 
 app.use('/auth', usuariosRoutes)
-
+app.use('/', propiedadRoutes)
 
 //Definir un puerto y arrancar el proyecto
 

@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./index.js",
     "server": "nodemon ./index.js",
-    "css": "postcss public/css/tailwind.css -o public/css/app.css --watch"
+    "css": "postcss public/css/tailwind.css -o public/css/app.css --watch",
+    "js": "webpack --watch",
+    "dev": "concurrently \"npm run css\" \"npm run js\" "
   },
   "keywords": [
     "MVC",
@@ -38,9 +40,12 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.8",
+    "concurrently": "^7.4.0",
     "nodemon": "^2.0.19",
     "postcss": "^8.4.16",
     "postcss-cli": "^10.0.0",
-    "tailwindcss": "^3.1.8"
+    "tailwindcss": "^3.1.8",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   }
 }

@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { generarId, generarJwt } from '../helpers/tokens.js'
 import { emailRegistro,emailOlvidePassword } from '../helpers/emails.js'
 import Usuario from '../models/Usuario.js'
-import {v4 as uuidv4} from 'uuid'
+
 
 const formularioLogin = (req, res) => {
     res.render('auth/login', {
@@ -134,7 +134,6 @@ const registrar = async (req, res) => {
     }
     //Almacenar un Usuario
     const usuario = await Usuario.create({
-        id: uuidv4(),
         nombre,
         email,
         password,

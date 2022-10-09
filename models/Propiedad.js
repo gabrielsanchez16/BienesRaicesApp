@@ -1,12 +1,12 @@
 import {DataTypes} from 'sequelize'
 import db from '../config/db.js'
-
+import {v4 as uuidv4} from 'uuid'
 
 const Propiedad = db.define('propiedades',{
     id: {
         primaryKey: true,
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUID,
+        defaultValue: uuidv4,
         allowNull: false
     },
     titulo: {
@@ -26,11 +26,11 @@ const Propiedad = db.define('propiedades',{
         allowNull: false
     },
     wc: {
-        type: DataTypes.FLOAT,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     calle: {
-        type: DataTypes.STRING(60),
+        type: DataTypes.STRING,
         allowNull:false
     },
     lat:{

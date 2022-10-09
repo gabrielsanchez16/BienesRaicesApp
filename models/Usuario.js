@@ -1,12 +1,13 @@
 import sequelize from 'sequelize'
 import bcrypt from 'bcrypt' 
 import db from '../config/db.js'
-
+import {v4 as uuidv4} from 'uuid'
 
 const Usuario = db.define('usuarios',{
     id: {
         primaryKey: true,
         type: sequelize.DataTypes.UUID,
+        defaultValue: uuidv4,
         allowNull: false,
     },
     nombre: {
@@ -28,6 +29,13 @@ const Usuario = db.define('usuarios',{
         beforeCreate: async function(usuario) {
             const salt = await bcrypt.genSalt(10)
             usuario.password = await bcrypt.hash(usuario.password, salt)
+        }
+    },
+    scopes: { //los scopes sirven para eliminar informacion que no queremos que vean en alguna consulta
+        eliminarPassword:{
+            attributes:{
+                exclude: ['password', 'token', 'confirmado', 'createdAt', 'updatedAt']
+            }
         }
     }
 })

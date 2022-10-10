@@ -1,28 +1,62 @@
-import {validationResult} from 'express-validator'
-import {Precio, Categoria, Propiedad} from '../models/index.js'
+import { unlink } from 'node:fs/promises'
+import { validationResult } from 'express-validator'
+import { Precio, Categoria, Propiedad } from '../models/index.js'
 
 const admin = async (req, res) => {
 
-    const {id} = req.usuario
+    const { pagina: paginaActual } = req.query
+    
 
-    const propiedades = await Propiedad.findAll({
-        where:{
-            usuarioId: id
-        },
-        include:[
-            {model: Categoria, as: 'categoria' },
-            {model: Precio, as: 'precio' }
-        ]
-    })
+    const expresion = /^[1-9]$/
+
+    if (!expresion.test(paginaActual)) {
+        return res.redirect('/mis-propiedades?pagina=1')
+    }
+
+    try {
+        const { id } = req.usuario
+
+        //limites y Offset para el paginador
+        const limit = 5
+        const offset = ((paginaActual * limit) - limit)
+
+        const [propiedades, total] = await Promise.all([
+            Propiedad.findAll({
+                limit,
+                offset,
+                where: {
+                    usuarioId: id
+                },
+                include: [
+                    { model: Categoria, as: 'categoria' },
+                    { model: Precio, as: 'precio' }
+                ]
+            }),
+            Propiedad.count({
+                where: {
+                    usuarioId: id
+                }
+            })
+        ])
 
 
 
-    res.render('propiedades/admin', {
-        pagina: "Mis Propiedades",
-        csrfToken: req.csrfToken(),
-        propiedades,
-    })
+        res.render('propiedades/admin', {
+            pagina: "Mis Propiedades",
+            csrfToken: req.csrfToken(),
+            propiedades,
+            paginas: Math.ceil(total / limit),
+            paginaActual: Number(paginaActual),
+            total,
+            offset,
+            limit
+        })
+    } catch (error) {
+        console.log(error)
+    }
+
 }
+
 
 
 //Formulario para crear propiedad
@@ -35,7 +69,7 @@ const crear = async (req, res) => {
     ])
 
     res.render('propiedades/crear', {
-        pagina: "Crear Propiedades",
+        pagina: "Crear Propiedad",
         csrfToken: req.csrfToken(),
         categorias,
         precios,
@@ -43,12 +77,12 @@ const crear = async (req, res) => {
     })
 }
 
-const guardar = async (req,res) => {
+const guardar = async (req, res) => {
 
     //Validacion
     let resultado = validationResult(req)
 
-    if(!resultado.isEmpty()){
+    if (!resultado.isEmpty()) {
 
         //Consultar modelo de precios y categorias
         const [categorias, precios] = await Promise.all([
@@ -56,8 +90,8 @@ const guardar = async (req,res) => {
             Precio.findAll()
         ])
 
-        return res.render('propiedades/crear',{
-            pagina: "Crear Propiedades",
+        return res.render('propiedades/crear', {
+            pagina: "Crear Propiedad",
             csrfToken: req.csrfToken(),
             categorias,
             precios,
@@ -67,9 +101,9 @@ const guardar = async (req,res) => {
     }
 
     //Crear un registro
-    const {titulo,descripcion, habitaciones,estacionamiento,wc,calle,lat,lng, precio:precioId, categoria: categoriaId} = req.body
-    const {id: usuarioId} = req.usuario
-    try{
+    const { titulo, descripcion, habitaciones, estacionamiento, wc, calle, lat, lng, precio: precioId, categoria: categoriaId } = req.body
+    const { id: usuarioId } = req.usuario
+    try {
         const propiedadGuardada = await Propiedad.create({
             titulo,
             descripcion,
@@ -85,60 +119,60 @@ const guardar = async (req,res) => {
             imagen: ''
         })
 
-        const {id} = propiedadGuardada
+        const { id } = propiedadGuardada
         res.redirect(`/propiedades/agregar-imagen/${id}`)
     } catch (error) {
         console.log(error)
-    } 
+    }
 }
 
-const agregarImagen = async (req,res) => {
+const agregarImagen = async (req, res) => {
 
-    const {id} = req.params
+    const { id } = req.params
 
     //Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
 
-    if(!propiedad){
+    if (!propiedad) {
         return res.redirect('/mis-propiedades')
     }
 
     //Validar que la propiedad no este publicada
 
-    if(propiedad.publicado){
+    if (propiedad.publicado) {
         return res.redirect('/mis-propiedades')
     }
-    
+
     //Validar que la propiedad pertenece a quien visita la pagina
-    if(propiedad.usuarioId !== req.usuario.id){
+    if (propiedad.usuarioId !== req.usuario.id) {
         return res.redirect('/mis-propiedades')
     }
 
     res.render('propiedades/agregar-imagen', {
-            pagina: `Agregar Imagenes: ${propiedad.titulo}`,
-            csrfToken: req.csrfToken(),
-            propiedad,
+        pagina: `Agregar Imagen: ${propiedad.titulo}`,
+        csrfToken: req.csrfToken(),
+        propiedad,
     })
 }
 
-const almacenarImagen = async (req,res, next) => {
-    const {id} = req.params
+const almacenarImagen = async (req, res, next) => {
+    const { id } = req.params
 
     //Validar que la propiedad exista
     const propiedad = await Propiedad.findByPk(id)
 
-    if(!propiedad){
+    if (!propiedad) {
         return res.redirect('/mis-propiedades')
     }
 
     //Validar que la propiedad no este publicada
 
-    if(propiedad.publicado){
+    if (propiedad.publicado) {
         return res.redirect('/mis-propiedades')
     }
-    
+
     //Validar que la propiedad pertenece a quien visita la pagina
-    if(propiedad.usuarioId !== req.usuario.id){
+    if (propiedad.usuarioId !== req.usuario.id) {
         return res.redirect('/mis-propiedades')
     }
 
@@ -147,7 +181,7 @@ const almacenarImagen = async (req,res, next) => {
         //Almacenar la imagen y publicar propiedad
         propiedad.imagen = req.file.filename
         propiedad.publicado = 1
-    
+
 
         await propiedad.save()
 
@@ -158,11 +192,160 @@ const almacenarImagen = async (req,res, next) => {
     }
 }
 
+const editar = async (req, res) => {
+
+    const { id } = req.params
+    //Validar que la propiedad exista
+    const propiedades = await Propiedad.findByPk(id)
+
+    if (!propiedades) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Revisar quien visita la url es el propietario
+    if (propiedades.usuarioId !== req.usuario.id) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Consultar modelo de precios y categorias
+    const [categorias, precios] = await Promise.all([
+        Categoria.findAll(),
+        Precio.findAll()
+    ])
+
+    res.render('propiedades/editar', {
+        pagina: `Editar Propiedad: ${propiedades.titulo}`,
+        csrfToken: req.csrfToken(),
+        categorias,
+        precios,
+        datos: propiedades
+    })
+}
+
+const guardarCambios = async (req, res) => {
+
+
+    //validar los campos
+    let resultado = validationResult(req)
+
+    if (!resultado.isEmpty()) {
+
+        //Consultar modelo de precios y categorias
+        const [categorias, precios] = await Promise.all([
+            Categoria.findAll(),
+            Precio.findAll()
+        ])
+
+
+        return res.render('propiedades/editar', {
+            pagina: 'Editar Propiedad',
+            csrfToken: req.csrfToken(),
+            categorias,
+            precios,
+            errores: resultado.array(),
+            datos: req.body
+        })
+    }
+    const { id } = req.params
+    //Validar que la propiedad exista
+    const propiedades = await Propiedad.findByPk(id)
+
+    if (!propiedades) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Revisar quien visita la url es el propietario
+    if (propiedades.usuarioId !== req.usuario.id) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Reescribir la informacion y actualizarla
+    try {
+        const { titulo, descripcion, habitaciones, estacionamiento, wc, calle, lat, lng, precio: precioId, categoria: categoriaId } = req.body
+
+        propiedades.set({
+            titulo,
+            descripcion,
+            habitaciones,
+            estacionamiento,
+            wc,
+            calle,
+            lat,
+            lng,
+            precioId,
+            categoriaId
+        })
+
+        await propiedades.save();
+
+        res.redirect('/mis-propiedades')
+
+    } catch (error) {
+        console.log(error)
+    }
+
+}
+
+const eliminar = async (req, res) => {
+    const { id } = req.params
+
+    //Validar que la propiedad exista
+    const propiedades = await Propiedad.findByPk(id)
+
+    if (!propiedades) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Revisar quien visita la url es el propietario
+    if (propiedades.usuarioId !== req.usuario.id) {
+        res.redirect('/mis-propiedades')
+    }
+
+
+    //Eliminar la Imagen Asociada
+
+    await unlink(`public/uploads/${propiedades.imagen}`)
+
+    //Eliminar la propiedad
+
+    await propiedades.destroy();
+    res.redirect('/mis-propiedades')
+}
+
+//Muestra una Propiedad
+
+const mostrarPropiedad = async (req, res) => {
+    const { id } = req.params
+
+    //Validar que la propiedad exista
+    const propiedad = await Propiedad.findByPk(id, {
+        include: [
+            { model: Categoria, as: 'categoria' },
+            { model: Precio, as: 'precio' }
+        ]
+    })
+
+    if (!propiedad) {
+        res.redirect('/404')
+    }
+
+
+
+
+    res.render(`propiedades/mostrar`, {
+        propiedad,
+        pagina: propiedad.titulo,
+    })
+}
 
 export {
     admin,
     crear,
     guardar,
     agregarImagen,
-    almacenarImagen
+    almacenarImagen,
+    editar,
+    guardarCambios,
+    eliminar,
+    mostrarPropiedad
 }

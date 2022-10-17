@@ -1,9 +1,10 @@
 import express from "express"
 import { body } from 'express-validator'
-import {admin,crear,guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, mostrarPropiedad
+import {admin,crear,guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, mostrarPropiedad,enviarMensaje,verMensajes
 }from '../controllers/propiedadController.js'
 import protegerRuta from "../middlewares/protegerRuta.js"
 import upload from '../middlewares/subirImagen.js'
+import identificarUsuario from '../middlewares/identificarUsuario.js'
 
 const router = express.Router()
 
@@ -70,6 +71,16 @@ router.route('/propiedades/eliminar/:id')
 
 
 router.route('/propiedad/:id')
-    .get(mostrarPropiedad)
+    .get(identificarUsuario,mostrarPropiedad)
+    .post(//Almacenar los mensajes
+        identificarUsuario,
+        body('mensaje').isLength({min:15}).withMessage('Muy corto el mensaje'),
+        enviarMensaje
+        )
+
+router.route('/mensajes/:id')
+    .get(protegerRuta,verMensajes)
+
+
     
 export default router

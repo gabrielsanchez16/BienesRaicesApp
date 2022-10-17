@@ -9,10 +9,10 @@ const Categorias = [
         nombre: 'Apartamento'
     },
     {
-        nombre: 'Terreno o Lote'
+        nombre: 'Terreno'
     },
     {
-        nombre: 'Cabañas'
+        nombre: 'Cabaña'
     }
 ]
 

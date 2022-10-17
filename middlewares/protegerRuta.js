@@ -20,7 +20,9 @@ const protegerRuta = async (req,res,next) => {
         if(usuario){
             req.usuario = usuario
         }else{
-            return res.redirect('/auth/login')
+            return res.redirect('/auth/login', {
+                csrfToken: req.csrfToken(),
+            })
         }
         return next();
     }catch(error){

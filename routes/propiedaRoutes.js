@@ -1,6 +1,6 @@
 import express from "express"
 import { body } from 'express-validator'
-import {admin,crear,guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, mostrarPropiedad,enviarMensaje,verMensajes
+import {admin,crear,guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, cambiarEstadoPropiedad, mostrarPropiedad,enviarMensaje,verMensajes, mostrarPropiedadAdmin, enviarMensajeAdmin
 }from '../controllers/propiedadController.js'
 import protegerRuta from "../middlewares/protegerRuta.js"
 import upload from '../middlewares/subirImagen.js'
@@ -66,6 +66,18 @@ router.route('/propiedades/editar/:id')
             )
 router.route('/propiedades/eliminar/:id')
     .post(protegerRuta,eliminar)
+
+router.route('/propiedades/:id')
+    .put(protegerRuta,cambiarEstadoPropiedad)
+
+router.route('/propiedad/admin/:id')
+        .get(protegerRuta,identificarUsuario,mostrarPropiedadAdmin)
+        .post(//Almacenar los mensajes
+            protegerRuta,
+            identificarUsuario,
+            body('mensaje').isLength({min:15}).withMessage('Muy corto el mensaje'),
+        enviarMensajeAdmin
+        )
 
 //Area Publica
 

@@ -1,7 +1,7 @@
 import { unlink } from 'node:fs/promises'
 import { validationResult } from 'express-validator'
-import { Precio, Categoria, Propiedad, Mensaje } from '../models/index.js'
-import {esVendedor} from '../helpers/index.js'
+import { Precio, Categoria, Propiedad, Mensaje, Usuario } from '../models/index.js'
+import {esVendedor, formatearFecha} from '../helpers/index.js'
 
 const admin = async (req, res) => {
 
@@ -314,6 +314,37 @@ const eliminar = async (req, res) => {
     res.redirect('/mis-propiedades')
 }
 
+//Inactivar o Activar una propiedad 
+
+const cambiarEstadoPropiedad = async(req,res)=>{
+    const { id } = req.params
+
+    //Validar que la propiedad exista
+    const propiedades = await Propiedad.findByPk(id)
+
+    if (!propiedades) {
+        res.redirect('/mis-propiedades')
+    }
+
+    //Revisar quien visita la url es el propietario
+    if (propiedades.usuarioId !== req.usuario.id) {
+        res.redirect('/mis-propiedades')
+    }
+
+
+
+    //Actualizar estado
+    propiedades.publicado = !propiedades.publicado
+
+    await propiedades.save()
+
+    res.json({
+        resultado:'ok'
+    })
+
+}
+
+
 //Muestra una Propiedad
 
 const mostrarPropiedad = async (req, res) => {
@@ -329,7 +360,7 @@ const mostrarPropiedad = async (req, res) => {
         ]
     })
 
-    if (!propiedad) {
+    if (!propiedad || !propiedad.publicado) {
         res.redirect('/404')
     }
 
@@ -342,6 +373,87 @@ const mostrarPropiedad = async (req, res) => {
         csrfToken: req.csrfToken(),
         usuario: req.usuario,
         esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId)
+    })
+}
+
+const mostrarPropiedadAdmin = async (req, res) => {
+    const { id } = req.params
+
+    
+
+    //Validar que la propiedad exista
+    const propiedad = await Propiedad.findByPk(id, {
+        include: [
+            { model: Categoria, as: 'categoria' },
+            { model: Precio, as: 'precio' }
+        ]
+    })
+
+    if (!propiedad || !propiedad.publicado) {
+        res.redirect('/inicio/404')
+    }
+
+    
+
+
+    res.render(`propiedades/mostrar-admin`, {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId)
+    })
+}
+
+const enviarMensajeAdmin = async(req, res)=>{
+    const { id } = req.params
+
+   
+    //Validar que la propiedad exista
+    const propiedad = await Propiedad.findByPk(id, {
+        include: [
+            { model: Categoria, as: 'categoria' },
+            { model: Precio, as: 'precio' }
+        ]
+    })
+
+    if (!propiedad) {
+        res.redirect('/inicio/404')
+    }
+
+    //Renderizar los errores
+    let resultado = validationResult(req)
+
+    if (!resultado.isEmpty()) {
+        res.render(`propiedades/mostrar-admin`, {
+            propiedad,
+            pagina: propiedad.titulo,
+            csrfToken: req.csrfToken(),
+            usuario: req.usuario,
+            esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+            errores: resultado.array()
+        })
+    }
+
+    //Almacenar mensaje
+    const {mensaje} = req.body
+    const { id:propiedadId } = req.params
+    const {id: usuarioId} = req.usuario
+
+    await Mensaje.create({
+        mensaje,
+        propiedadId,
+        usuarioId
+    })
+
+
+    res.render(`propiedades/mostrar-admin`, {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+        enviado:true
     })
 }
 
@@ -387,7 +499,14 @@ const enviarMensaje = async(req, res)=>{
     })
 
 
-    res.redirect('/')
+    res.render(`propiedades/mostrar`, {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+        enviado:true
+    })
 }
 
 //Leer Mensajes Recibidos 
@@ -398,7 +517,11 @@ const verMensajes = async(req,res)=>{
     //Validar que la propiedad exista
     const propiedades = await Propiedad.findByPk(id,{
         include: [
-            { model: Mensaje, as: 'mensajes' }
+            { model: Mensaje, as: 'mensajes',
+                include:[
+                    { model:Usuario.scope('eliminarPassword'), as:'usuario'}
+                ]
+        }
         ]
     })
 
@@ -412,7 +535,8 @@ const verMensajes = async(req,res)=>{
     }
     res.render('propiedades/mensajes',{
         pagina: 'Mensajes',
-        mensajes: propiedades.mensajes
+        mensajes: propiedades.mensajes,
+        formatearFecha
     })
 }
 
@@ -426,6 +550,10 @@ export {
     guardarCambios,
     eliminar,
     mostrarPropiedad,
+    mostrarPropiedadAdmin,
+    enviarMensajeAdmin,
+    cambiarEstadoPropiedad,
     enviarMensaje,
     verMensajes
+
 }

@@ -1,4 +1,4 @@
-extends ./layout/app 
+extends ./layout/admin 
 block styles
     link(rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css")
 
@@ -31,7 +31,7 @@ block contenido
             if casas.length 
                 div(class="grid grid-col-1 lg:grid-cols-3 md:grid-cols-2 gap-5 mt-14")
                     each propiedad in casas 
-                        include ./templates/card
+                        include ./templates/card-admin
             else 
                 p(class="text-center text-gray-800 text-sm py-10") No hay resultados
                         
@@ -41,7 +41,7 @@ block contenido
             if departamentos.length
                 div(class="grid grid-col-1 lg:grid-cols-3 md:grid-cols-2 gap-5 mt-14")
                     each propiedad in departamentos 
-                        include ./templates/card
+                        include ./templates/card-admin
             else 
                 p(class="text-center text-gray-800 text-sm py-10") No hay resultados
 
@@ -52,10 +52,10 @@ block contenido
                 div(class="grid grid-col-1 lg:grid-cols-3 md:grid-cols-2 gap-5 mt-14")
             
                     each propiedad in terrenos
-                        include ./templates/card
+                        include ./templates/card-admin
             else 
                 p(class="text-center text-gray-800 text-sm py-10") No hay resultados
 
 block scripts 
     script(src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js")
-    script(src="/js/mapaInicio.js") 
+    script(src="/js/mapaInicioAdmin.js") 

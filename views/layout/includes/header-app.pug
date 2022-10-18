@@ -1,26 +1,28 @@
 header.bg-green-700.p-4
     .container.mx-auto.flex.justify-between.items-center
         a(href="/") 
-            h1.text-2xl.text-white.font-extrabold.text-center Bienes 
-                pan.font-normal Raices Turin
+            h1(class="text-lg sm:text-2xl text-white font-extrabold text-center") Tura 
+                span(class="font-normal") Raices
 
-        nav(class="my-5 text-sm md:flex md:items-center md:gap-3 font-bold text-white hidden") 
-            a(href="/auth/register" ) Crear Cuenta
-            a(href="/auth/login" ) Iniciar Sesion
+        nav(class="my-5 text-xs flex justify-around :items-center gap-3 font-bold md:w-1/12 text-white ") 
+            a(href="/auth/register" ) 
+                i(class="fa-solid fa-user-plus text-lg") 
+            a(href="/auth/login" )
+                i(class="fa-solid fa-right-to-bracket text-lg")
             
-div(class="bg-green-800 py-5 hidden lg:block")
-    div(class="container mx-auto flex justify-between")
-        nav(class="flex gap-4 items-center") 
-            a(href="/categorias/1" class="text-sm font-bold uppercase text-white") Casas 
-            a(href="/categorias/2" class="text-sm font-bold uppercase text-white") Bodegas 
-            a(href="/categorias/3" class="text-sm font-bold uppercase text-white") Apartamentos 
-            a(href="/categorias/4" class="text-sm font-bold uppercase text-white") Terrenos
-            a(href="/categorias/5" class="text-sm font-bold uppercase text-white") Cabañas
+div(class="bg-green-800 py-5  lg:block")
+    div(class="container mx-auto ")
+        nav(class="flex justify-center md:justify-around  flex-wrap gap-3 items-center") 
+            a(href="/categorias/1" class="text-xs md:text-sm font-bold uppercase text-white") Casas 
+            a(href="/categorias/2" class="text-xs md:text-sm font-bold uppercase text-white") Bodegas 
+            a(href="/categorias/3" class="text-xs md:text-sm font-bold uppercase text-white") Apartamentos 
+            a(href="/categorias/4" class="text-xs md:text-sm font-bold uppercase text-white") Terrenos
+            a(href="/categorias/5" class="text-xs md:text-sm font-bold uppercase text-white") Cabañas
 
-        form(action="/buscador" method="POST" class="flex gap-3 items-center")
+        form(action="/buscador" method="POST" class="mt-5 flex justify-center flex-wrap gap-3 md:gap-5 items-center")
             input(type="hidden" name="_csrf" value=csrfToken)
-            label(for="termino" class="text-sm uppercase font-bold text-white") Busqueda 
-            input(type="text" id="termino" name="termino" placeholder="Buscar Propiedades" class="p-2 rounded-lg shadow text-sm")
+            label(for="termino" class="text-xs md:text-sm uppercase font-bold text-white hidden sm:block") Busqueda 
+            input(type="text" id="termino" name="termino" placeholder="Buscar Propiedades" class="p-2 rounded-lg shadow text-xs md:text-sm")
 
-            input(type="submit" class="transition duration-700 ease-in-out bg-green-900 hover:bg-green-400 rounded-lg text-white uppercase font-bold p-2 cursor-pointer text-sm" value="Buscar")
+            input(type="submit" class="transition duration-700 ease-in-out bg-green-900 hover:bg-green-400 rounded-lg text-white uppercase font-bold p-2 cursor-pointer text-xs md:text-sm" value="Buscar")
         

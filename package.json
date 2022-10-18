@@ -1,7 +1,7 @@
 {
   "name": "bienesraices",
   "version": "1.0.0",
-  "description": "mi primer proyecto",
+  "description": "app bienes raices Buenaventura",
   "main": "index.js",
   "type": "module",
   "scripts": {

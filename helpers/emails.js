@@ -35,6 +35,7 @@ const emailOlvidePassword = async (datos) => {
   var transport = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
+      secure:true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
@@ -45,7 +46,7 @@ const emailOlvidePassword = async (datos) => {
     
 
     await transport.sendMail({
-      from: 'BienesRaicesTurin',
+      from: '"BienesRaicesTurin" <gabrielpelota.8@gmail.com>',
       to: email,
       subject: 'Restablece tu Contraseña en BienesRaicesTurin',
       text: 'Restablece tu Contraseña en BienesRaicesTurin',
@@ -53,7 +54,7 @@ const emailOlvidePassword = async (datos) => {
           <h1>Hola ${nombre}, Bienvenido a BienesRaicesTurin has solicitado reestablecer tu Contraseña </h1>
           
           <p>Sigue el siguiente enlace para generer una Contraseña nueva:
-          <a href="${process.env.BACKEND_URL}:${process.env.PORT ?? 8000}/auth/olvide-password/${token}">Reestablecer Contraseña</a>
+          <a href="${process.env.BACKEND_URL}/auth/olvide-password/${token}">Reestablecer Contraseña</a>
           </p>
 
           <p>Si tu no solicitaste el cambio de la Contraseña, puedes ignorar este mensaje</p>
